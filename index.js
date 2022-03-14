@@ -1,8 +1,32 @@
 const space = document.querySelector('.space');
 const cell = document.getElementsByClassName('cell');
 const currentPlayer = document.getElementById('curPlyr');
+const buttonPlay = document.querySelector('.select-button');
+const playTitle = document.querySelector('.play-title');
 
 let player = "x";
+let gameSelectionAuto = false;
+
+buttonPlay.addEventListener('click', togglePlay);
+playTitle.textContent = 'Игра вдвоём'
+
+function togglePlay() {
+    console.log('togglePlay')
+    gameSelectionAuto = !gameSelectionAuto;
+    if (!gameSelectionAuto) {
+        playTitle.textContent = 'Игра вдвоём'
+    } else {
+        playTitle.textContent = 'Игра с компьютером'
+    }
+}
+
+
+
+if(gameSelectionAuto) {
+    console.log('Игра с компьютером')
+} else {
+    console.log('Игра вдвоём')
+}
 
 const winIndex = [
     [1,2,3],
@@ -28,6 +52,34 @@ for (let i = 1; i <= 9; i++) {
 
 for (let i = 0; i < cell.length; i++) {
     cell[i].addEventListener('click', cellClick, false);
+}
+
+function autoMove() {
+
+    //let a = cell.filter(val => val.innerHTML !== 0)
+
+
+    let t = Math.ceil(Math.random() *9)
+
+        if(cell[t].innerHTML.length !== 0)
+        {
+            console.log('cell[t].innerHTML', cell[t].innerHTML)
+            this.innerHTML = player;
+        }
+
+        // console.log('i===t', i, t, this.innerHTML)
+        //
+        // if(!cell.hasOwnProperty("item")) {
+        //     this.innerHTML = player;
+        //     return;
+        // }
+
+    cellClick()
+
+}
+
+function getRandomInt(max){
+    return Math.floor(Math.random() * max);
 }
 
 function cellClick() {
@@ -62,6 +114,10 @@ function cellClick() {
     }
     player = player === "x" ? "o" : "x";
     currentPlayer.innerHTML = player.toUpperCase();
+
+    if(gameSelectionAuto) {
+        autoMove()
+    }
 }
 
 function checkWin(data) {
