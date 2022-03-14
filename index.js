@@ -134,3 +134,4 @@ function updateStat() {
     document.getElementById('sO').innerHTML = stat.o;
     document.getElementById('sD').innerHTML = stat.d;
 }
+
