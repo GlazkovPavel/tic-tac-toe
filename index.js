@@ -3,11 +3,6 @@ const cell = document.getElementsByClassName('cell');
 const currentPlayer = document.getElementById('curPlyr');
 const buttonPlay = document.querySelector('.select-button');
 const playTitle = document.querySelector('.play-title');
-
-let player = "x";
-let gameSelectionAuto = false;
-
-
 const winIndex = [
   [1,2,3],
   [4,5,6],
@@ -19,23 +14,53 @@ const winIndex = [
   [3,5,7]
 ]
 
-const stat = {
+let stat = {
   'x': 0,
   'o': 0,
   'd': 0
 }
+let player = "x";
+let gameSelectionAuto;
 
+//Изначальное состояние
+if(JSON.parse(localStorage.getItem('stateGame')) === true) {
+    gameSelectionAuto =  localStorage.getItem('stateGame')
+    playTitle.textContent = 'Игра с компьютером'
+} else {
+    gameSelectionAuto = false;
+    playTitle.textContent = 'Игра вдвоём'
+}
 
+//Кнопка Переключения режима игры
 buttonPlay.addEventListener('click', togglePlay);
-playTitle.textContent = 'Игра вдвоём'
 
+//Функция Переключение режима игры
 function togglePlay() {
+    localStorage.removeItem('game');
+    localStorage.removeItem('stat');
+    localStorage.removeItem('stateGame');
+    restart("", false);
+
+    updateStat({
+        'x': 0,
+        'o': 0,
+        'd': 0
+    });
+    stat = {
+        'x': 0,
+        'o': 0,
+        'd': 0
+    }
   gameSelectionAuto = !gameSelectionAuto;
   if (!gameSelectionAuto) {
     playTitle.textContent = 'Игра вдвоём'
   } else {
     playTitle.textContent = 'Игра с компьютером'
   }
+
+  localStorage.setItem('stateGame', gameSelectionAuto)
+
+
 }
 
 for (let i = 1; i <= 9; i++) {
@@ -46,8 +71,22 @@ for (let i = 0; i < cell.length; i++) {
     cell[i].addEventListener('click', cellClick, false);
 }
 
+if(localStorage.getItem('game')) {
+    const arrGame = JSON.parse(localStorage.getItem('game'));
+    const stat = JSON.parse(localStorage.getItem('stat'));
+
+    for(let i = 0; i < cell.length; i++) {
+        arrGame.map(obj => obj.position === cell[i].getAttribute('pos') ? cell[i].innerHTML = obj.html :
+            obj)
+    }
+
+    updateStat(stat)
+
+}
+
 function cellClick() {
     const data = [];
+    const arrLocalStorage = [];
 
     if(!this.innerHTML) {
         this.innerHTML = player;
@@ -60,6 +99,13 @@ function cellClick() {
         if(cell[i].innerHTML === player){
             data.push(parseInt(cell[i].getAttribute('pos')));
         }
+        if (cell[i].innerHTML) {
+            const position = {
+                position: cell[i].getAttribute('pos'),
+                html: cell[i].innerHTML
+            }
+            arrLocalStorage.push(position);
+        }
     }
 
   winText(data);
@@ -70,11 +116,15 @@ function cellClick() {
   player = player === "x" ? "o" : "x";
   currentPlayer.innerHTML = player.toUpperCase();
 
+    if (!gameSelectionAuto) {
+        localStorage.setItem('game', JSON.stringify(arrLocalStorage));
+    }
 }
 
 function autoMove() {
+    const arrLocalStorage = [];
   const data = [];
-  let t = Math.ceil(Math.random() * 8)
+  let t = Math.ceil(Math.random() * 8);
 
   if(cell[t].innerHTML.length === 0) {
     cell[t].innerHTML = player;
@@ -85,14 +135,22 @@ function autoMove() {
     if(cell[i].innerHTML === player){
       data.push(parseInt(cell[i].getAttribute('pos')));
     }
+      if (cell[i].innerHTML) {
+          const position = {
+              position: cell[i].getAttribute('pos'),
+              html: cell[i].innerHTML
+          }
+          arrLocalStorage.push(position);
+      }
   }
   winText(data);
+    localStorage.setItem('game', JSON.stringify(arrLocalStorage));
 }
 
 function winText(data) {
   if(checkWin(data)) {
     stat[player] += 1;
-    restart("Выграл: " + player);
+    restart("Выграл: " + player, true);
   }else {
     let draw = true;
     for(let i in cell) {
@@ -100,7 +158,7 @@ function winText(data) {
     }
     if(draw) {
       stat.d += 1;
-      restart("Ничья");
+      restart("Ничья", true);
     }
   }
 }
@@ -121,17 +179,21 @@ function checkWin(data) {
     return false;
 }
 
-function restart(text) {
-    alert(text);
+function restart(text, show) {
+    if(show) {
+        alert(text);
+    }
     for(let i = 0; i < cell.length; i++) {
         cell[i].innerHTML = '';
     }
-    updateStat();
+    updateStat(stat);
 }
 
-function updateStat() {
+function updateStat(stat) {
     document.getElementById('sX').innerHTML = stat.x;
     document.getElementById('sO').innerHTML = stat.o;
     document.getElementById('sD').innerHTML = stat.d;
+
+    localStorage.setItem('stat', JSON.stringify(stat));
 }
 
