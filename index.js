@@ -50,17 +50,14 @@ function togglePlay() {
         'x': 0,
         'o': 0,
         'd': 0
-    }
+    };
   gameSelectionAuto = !gameSelectionAuto;
   if (!gameSelectionAuto) {
     playTitle.textContent = 'Игра вдвоём'
   } else {
     playTitle.textContent = 'Игра с компьютером'
   }
-
-  localStorage.setItem('stateGame', gameSelectionAuto)
-
-
+  localStorage.setItem('stateGame', gameSelectionAuto);
 }
 
 for (let i = 1; i <= 9; i++) {
@@ -80,13 +77,11 @@ if(localStorage.getItem('game')) {
             obj)
     }
 
-    updateStat(stat)
+    updateStat(stat);
 
 }
-
+//Функция клика
 function cellClick() {
-    const data = [];
-    const arrLocalStorage = [];
 
     if(!this.innerHTML) {
         this.innerHTML = player;
@@ -95,6 +90,37 @@ function cellClick() {
         return;
     }
 
+    const arr = pushArray();
+
+  winText(arr.data);
+  if(gameSelectionAuto) {
+    player = player === "x" ? "o" : "x";
+    autoMove();
+  }
+  player = player === "x" ? "o" : "x";
+  currentPlayer.innerHTML = player.toUpperCase();
+
+    if (!gameSelectionAuto) {
+        localStorage.setItem('game', JSON.stringify(arr.arrLocalStorage));
+    }
+}
+//функция компьютерного хода
+function autoMove() {
+  let t = Math.ceil(Math.random() * 8);
+
+  if(cell[t].innerHTML.length === 0) {
+    cell[t].innerHTML = player;
+  } else {
+    autoMove();
+  }
+  const arr = pushArray();
+  winText(arr.data);
+    localStorage.setItem('game', JSON.stringify(arr.arrLocalStorage));
+}
+//пушим в массивы
+function pushArray() {
+    const data = [];
+    const arrLocalStorage = [];
     for(let i in cell){
         if(cell[i].innerHTML === player){
             data.push(parseInt(cell[i].getAttribute('pos')));
@@ -107,46 +133,12 @@ function cellClick() {
             arrLocalStorage.push(position);
         }
     }
-
-  winText(data);
-  if(gameSelectionAuto) {
-    player = player === "x" ? "o" : "x";
-    autoMove()
-  }
-  player = player === "x" ? "o" : "x";
-  currentPlayer.innerHTML = player.toUpperCase();
-
-    if (!gameSelectionAuto) {
-        localStorage.setItem('game', JSON.stringify(arrLocalStorage));
-    }
+    return {
+        data,
+        arrLocalStorage
+    };
 }
-
-function autoMove() {
-    const arrLocalStorage = [];
-  const data = [];
-  let t = Math.ceil(Math.random() * 8);
-
-  if(cell[t].innerHTML.length === 0) {
-    cell[t].innerHTML = player;
-  } else {
-    autoMove()
-  }
-  for(let i in cell){
-    if(cell[i].innerHTML === player){
-      data.push(parseInt(cell[i].getAttribute('pos')));
-    }
-      if (cell[i].innerHTML) {
-          const position = {
-              position: cell[i].getAttribute('pos'),
-              html: cell[i].innerHTML
-          }
-          arrLocalStorage.push(position);
-      }
-  }
-  winText(data);
-    localStorage.setItem('game', JSON.stringify(arrLocalStorage));
-}
-
+//функция статистики и текста
 function winText(data) {
   if(checkWin(data)) {
     stat[player] += 1;
@@ -162,7 +154,7 @@ function winText(data) {
     }
   }
 }
-
+//проверка на выигрыш
 function checkWin(data) {
     for(let i in winIndex) {
         let win = true;
@@ -178,7 +170,7 @@ function checkWin(data) {
     }
     return false;
 }
-
+//рестарт
 function restart(text, show) {
     if(show) {
         alert(text);
@@ -188,7 +180,7 @@ function restart(text, show) {
     }
     updateStat(stat);
 }
-
+//статистика
 function updateStat(stat) {
     document.getElementById('sX').innerHTML = stat.x;
     document.getElementById('sO').innerHTML = stat.o;
